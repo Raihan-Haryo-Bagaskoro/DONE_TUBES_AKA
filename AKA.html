@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Algoritma - Premium Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-brown: #3d2b1f;
+            --accent-gold: #d4a373;
+            --bg-sand: #fefae0;
+            --deep-wood: #281c12;
+        }
+        body { 
+            background-color: var(--bg-sand); 
+            color: var(--deep-wood);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .luxury-card { 
+            background: #ffffff; 
+            border-radius: 24px; 
+            padding: 2.5rem; 
+            box-shadow: 0 20px 50px rgba(61, 43, 31, 0.08);
+            border: 1px solid rgba(212, 163, 115, 0.2);
+        }
+        .stat-value { font-family: 'JetBrains Mono', monospace; }
+        input[type=range] {
+            height: 8px;
+            -webkit-appearance: none;
+            background: #e9edc9;
+            border-radius: 5px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen py-10 px-6">
+
+    <div class="max-w-[1400px] mx-auto">
+        <header class="text-center mb-16">
+            <div class="inline-block px-4 py-1 rounded-full bg-[#d4a37333] text-[#a98467] text-sm font-bold tracking-widest uppercase mb-4">
+                Analisis dan Kompleksitas Algoritma
+            </div>
+            <h1 class="text-6xl font-extrabold tracking-tighter mb-4 text-[#3d2b1f]">
+                Iteratif <span class="text-[#d4a373]">vs</span> Rekursif
+            </h1>
+            <p class="text-xl text-[#6c584c] max-w-2xl mx-auto leading-relaxed">
+                Visualisasi perbandingan performa algoritma berdasarkan efisiensi waktu eksekusi dalam milidetik (ms).
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <div class="lg:col-span-4 space-y-8">
+                <div class="luxury-card">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="p-2 bg-stone-100 rounded-lg">⚙️</span> Parameter Input
+                    </h2>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between mb-4">
+                                <span class="font-semibold text-stone-500">Ukuran Data (n)</span>
+                                <span id="nBadge" class="px-3 py-1 bg-stone-800 text-white rounded-md font-mono">100</span>
+                            </div>
+                            <input type="range" id="nSlider" min="1" max="1000" value="100" class="w-full">
+                        </div>
+                        <div class="p-4 bg-stone-50 rounded-xl border border-stone-100">
+                            <p class="text-xs text-stone-400 uppercase font-bold mb-2">Input Manual</p>
+                            <input type="number" id="nInput" value="100" class="w-full bg-transparent text-3xl font-bold focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="luxury-card border-t-8 border-[#d4a373]">
+                    <div class="space-y-8">
+                        <div>
+                            <p class="text-sm font-bold text-stone-400 uppercase tracking-widest mb-1">Iteratif (ms)</p>
+                            <div id="iterVal" class="stat-value text-5xl font-bold text-[#3d2b1f]">0.000400</div>
+                        </div>
+                        <hr class="border-stone-100">
+                        <div>
+                            <p class="text-sm font-bold text-stone-400 uppercase tracking-widest mb-1">Rekursif (ms)</p>
+                            <div id="recVal" class="stat-value text-5xl font-bold text-[#bc6c25]">0.184700</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                <div class="luxury-card h-full flex flex-col">
+                    <h2 class="text-xl font-bold mb-8 flex items-center gap-2">
+                        <span class="p-2 bg-stone-100 rounded-lg">📊</span> Grafik Perbandingan
+                    </h2>
+                    <div class="flex-grow min-h-[450px]">
+                        <canvas id="luxuryChart"></canvas>
+                    </div>
+                    <div class="mt-8 flex gap-6 text-sm font-medium text-stone-500">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded bg-[#3d2b1f]"></div> Iteratif O(n)
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded bg-[#d4a373]"></div> Rekursif O(2^n)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="mt-20 text-center text-stone-400 text-sm">
+            &copy; Devrosan • Zuriel Egan Souisa • Raihan Haryo Bagaskoro
+        </footer>
+    </div>
+
+    <script>
+        // Data dari file TXT pengujian
+        const dataset = [
+            {n: 1, i: 0.000200, r: 0.000220}, {n: 5, i: 0.000100, r: 0.000840},
+            {n: 10, i: 0.000120, r: 0.003140}, {n: 20, i: 0.000120, r: 0.008380},
+            {n: 50, i: 0.000260, r: 0.038100}, {n: 100, i: 0.000400, r: 0.184700},
+            {n: 200, i: 0.000640, r: 1.322100}, {n: 300, i: 0.000960, r: 8.342400},
+            {n: 400, i: 0.001040, r: 17.079700}, {n: 500, i: 0.001440, r: 31.945500},
+            {n: 700, i: 0.002000, r: 99.814500}, {n: 900, i: 0.002240, r: 247.616200},
+            {n: 1000, i: 0.002860, r: 371.792600}
+        ];
+
+        const nSlider = document.getElementById('nSlider');
+        const nInput = document.getElementById('nInput');
+        const nBadge = document.getElementById('nBadge');
+        const iterVal = document.getElementById('iterVal');
+        const recVal = document.getElementById('recVal');
+
+        const ctx = document.getElementById('luxuryChart').getContext('2d');
+        let chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Iteratif',
+                        data: [],
+                        borderColor: '#3d2b1f',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#3d2b1f',
+                        tension: 0.4,
+                        fill: false
+                    },
+                    {
+                        label: 'Rekursif',
+                        data: [],
+                        borderColor: '#d4a373',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#d4a373',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(212, 163, 115, 0.1)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        type: 'logarithmic',
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { font: { family: 'JetBrains Mono' } }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        function update(val) {
+            val = parseInt(val);
+            nBadge.innerText = val;
+            nInput.value = val;
+
+            const filtered = dataset.filter(d => d.n <= val);
+            const current = filtered[filtered.length - 1];
+
+            iterVal.innerText = current.i.toFixed(6);
+            recVal.innerText = current.r.toFixed(6);
+
+            chart.data.labels = filtered.map(d => d.n);
+            chart.data.datasets[0].data = filtered.map(d => d.i);
+            chart.data.datasets[1].data = filtered.map(d => d.r);
+            chart.update();
+        }
+
+        nSlider.addEventListener('input', (e) => update(e.target.value));
+        nInput.addEventListener('change', (e) => {
+            let v = Math.min(1000, Math.max(1, e.target.value));
+            nSlider.value = v;
+            update(v);
+        });
+
+        update(100);
+    </script>
+</body>
+</html>
